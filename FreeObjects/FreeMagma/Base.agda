@@ -9,6 +9,6 @@ private
     ℓ : Level
 
 data FreeMagma (A : Type ℓ) : Type ℓ where
-  η : A → FreeMagma A
-  _·_ : FreeMagma A → FreeMagma A → FreeMagma A
+  η     : A → FreeMagma A
+  _·_   : FreeMagma A → FreeMagma A → FreeMagma A
   trunc : isSet (FreeMagma A)
