@@ -11,7 +11,7 @@ private
      ℓ : Level
 
 data FreeMonoid (A : Type ℓ) : Type ℓ where
-  η : A → FreeMonoid A
-  _·_ : FreeMonoid A → FreeMonoid A → FreeMonoid A
-  ε : FreeMonoid A
+  η     : A → FreeMonoid A
+  _·_   : FreeMonoid A → FreeMonoid A → FreeMonoid A
+  ε     : FreeMonoid A
   trunc : isSet (FreeMonoid A)
