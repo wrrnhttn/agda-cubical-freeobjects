@@ -43,21 +43,32 @@ private
 
 --
 
--- isOfHLevelBinTree : (n : HLevel) → isOfHLevel (suc (suc n)) A → isOfHLevel (suc (suc n)) (BinTree A)
--- isOfHLevelBinTree n ofLevel S T =
---   {!isOfHLevelRetract (suc n) ?!}
+isOfHLevelBinTree : (n : HLevel) → isOfHLevel (suc (suc n)) A → isOfHLevel (suc (suc n)) (BinTree A)
+isOfHLevelBinTree n ofLevel S T =
+  {!isOfHLevelRetract (suc n) ?!}
 
-BinTree→FreeMagma : BinTree A → FreeMagma A
-BinTree→FreeMagma (leaf x) = η x
-BinTree→FreeMagma (branch S T) = (BinTree→FreeMagma S) · BinTree→FreeMagma T
 
-FreeMagma→BinTree : FreeMagma A → BinTree A
-FreeMagma→BinTree (η x) = leaf x
-FreeMagma→BinTree (M · N) = branch (FreeMagma→BinTree M) (FreeMagma→BinTree N)
-FreeMagma→BinTree (trunc M N p q i j) = isSet→SquareP (λ i j → {!!}) -- we need isSet (BinTree A)
-                                                      (λ j → FreeMagma→BinTree (p j))
-                                                      (λ j → FreeMagma→BinTree (q j))
-                                                      refl refl i j
+
+-- NOTE:
+-- should i developed this in a further module which takes isSet A as a parameter?
+-- would this make using the equality (eventually to be) obtained from transport easier?
+
+module _ (setA : isSet A) where
+  binTreeSet : isSet (BinTree A)
+  binTreeSet = isOfHLevelBinTree 0 setA
+
+  BinTree→FreeMagma : BinTree A → FreeMagma A
+  BinTree→FreeMagma (leaf x) = η x
+  BinTree→FreeMagma (branch S T) = (BinTree→FreeMagma S) · BinTree→FreeMagma T
+
+  -- can i make isSet A an implicit parameter?
+  FreeMagma→BinTree : FreeMagma A → BinTree A
+  FreeMagma→BinTree (η x) = leaf x
+  FreeMagma→BinTree (M · N) = branch (FreeMagma→BinTree M) (FreeMagma→BinTree N)
+  FreeMagma→BinTree (trunc M N p q i j) = isSet→SquareP (λ i j → binTreeSet)
+                                                        (λ j → FreeMagma→BinTree (p j))
+                                                        (λ j → FreeMagma→BinTree (q j))
+                                                        refl refl i j
 
 -- FreeMagma→BinTree : FreeMagma A → ∥ BinTree A ∥₂
 -- FreeMagma→BinTree (η x) = ∣ (leaf x) ∣₂
