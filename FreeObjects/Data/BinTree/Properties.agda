@@ -24,11 +24,11 @@ module BinTreePath {ℓ} {A : Type ℓ} where
   Cover (leaf x) (leaf y) = x ≡ y
   Cover (leaf _) (branch _ _) = Lift ⊥
   Cover (branch _ _) (leaf x) = Lift ⊥
-  Cover (branch S T) (branch U V) = Cover S T × Cover U V
+  Cover (branch S T) (branch U V) = Cover S U × Cover T V
 
-  reflCode : ∀ T → Cover T T
+  reflCode : (T : BinTree A) → Cover T T
   reflCode (leaf _) = refl
-  reflCode (branch S T) = {!!} , {!!}
+  reflCode (branch S T) = reflCode S , reflCode T
 
   encode : ∀ S T → (p : S ≡ T) → Cover S T
   encode S _ = J (λ T _ → Cover S T) (reflCode S)
@@ -37,19 +37,24 @@ module BinTreePath {ℓ} {A : Type ℓ} where
   encodeRefl T = JRefl (λ S _ → Cover S S) (reflCode T)
 
   decode : ∀ S T → Cover S T → S ≡ T
-  decode (leaf x) (leaf y) x≡y = cong₂ {!!} x≡y {!!}
+  decode (leaf x) (leaf y) x≡y = cong leaf x≡y
   decode (leaf x) (branch T T₁) (lift ())
   decode (branch _ _) (leaf x) (lift ())
-  decode (branch S T) (branch U V) (cST , cUV) = cong₂ branch (decode S U {!!}) {!!}
+  decode (branch S T) (branch U V) (cSU , cTV) = cong₂ branch (decode S U cSU) (decode T V cTV)
 
   decodeRefl : ∀ T → decode T T (reflCode T) ≡ refl
-  decodeRefl = {!!}
+  decodeRefl (leaf x) = refl
+  decodeRefl (branch S T) = {!!} --not sure what to do here
 
   decodeEncode : ∀ S T →  (p : S ≡ T) → decode S T (encode S T p) ≡ p
   decodeEncode S T = J (λ T p → decode S T (encode S T p) ≡ p) (cong (decode S S) (encodeRefl S) ∙ decodeRefl S)
 
-  isOfHLevelCover : (n : HLevel) (p : isOfHLevel (suc (suc n)) A)(S T : BinTree A) → isOfHLevel (suc n) (Cover S T)
-  isOfHLevelCover = {!!}
+  isOfHLevelCover : (n : HLevel) (p : isOfHLevel (suc (suc n)) A)
+    (S T : BinTree A) → isOfHLevel (suc n) (Cover S T)
+  isOfHLevelCover n p (leaf x) (leaf y) = p x y
+  isOfHLevelCover n p (leaf x) (branch S T) = isOfHLevelLift (suc n) (isProp→isOfHLevelSuc n isProp⊥)
+  isOfHLevelCover n p (branch S T) (leaf x) = isOfHLevelLift (suc n) (isProp→isOfHLevelSuc n isProp⊥)
+  isOfHLevelCover n p (branch S T) (branch U V) = {!isOfHLevel× ? ?!}
 
 --
 
