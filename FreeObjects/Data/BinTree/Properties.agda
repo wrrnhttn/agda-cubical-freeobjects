@@ -2,6 +2,7 @@
 
 module FreeObjects.Data.BinTree.Properties where
 
+open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Data.Nat using (suc)
@@ -17,45 +18,57 @@ private
     ℓ : Level
     A : Type ℓ
 
--- module BinTreePath {ℓ} {A : Type ℓ} where
+module BinTreePath {ℓ} {A : Type ℓ} where
 
---   Cover : BinTree A → BinTree A → Type ℓ
---   Cover (leaf x) (leaf y) = x ≡ y
---   Cover (leaf _) (branch _ _) = Lift ⊥
---   Cover (branch _ _) (leaf x) = Lift ⊥
---   Cover (branch S T) (branch U V) = Cover S T × Cover U V
+  Cover : BinTree A → BinTree A → Type ℓ
+  Cover (leaf x) (leaf y) = x ≡ y
+  Cover (leaf _) (branch _ _) = Lift ⊥
+  Cover (branch _ _) (leaf x) = Lift ⊥
+  Cover (branch S T) (branch U V) = Cover S T × Cover U V
 
---   reflCode : ∀ T → Cover T T
---   reflCode (leaf _) = refl
---   reflCode (branch S T) = {!!} , {!!}
+  reflCode : ∀ T → Cover T T
+  reflCode (leaf _) = refl
+  reflCode (branch S T) = {!!} , {!!}
 
---   encode : ∀ S T → (p : S ≡ T) → Cover S T
---   encode S _ = J (λ T _ → Cover S T) (reflCode S)
+  encode : ∀ S T → (p : S ≡ T) → Cover S T
+  encode S _ = J (λ T _ → Cover S T) (reflCode S)
 
---   encodeRefl : ∀ T → encode T T refl ≡ reflCode T
---   encodeRefl T = JRefl (λ S _ → Cover S S) (reflCode T)
+  encodeRefl : ∀ T → encode T T refl ≡ reflCode T
+  encodeRefl T = JRefl (λ S _ → Cover S S) (reflCode T)
 
---   decode : ∀ S T → Cover S T → S ≡ T
---   decode (leaf x) (leaf y) x≡y = cong₂ {!!} x≡y {!!}
---   decode (leaf x) (branch T T₁) (lift ())
---   decode (branch _ _) (leaf x) (lift ())
---   decode (branch S T) (branch U V) (cST , cUV) = cong₂ branch (decode S U {!!}) {!!}
+  decode : ∀ S T → Cover S T → S ≡ T
+  decode (leaf x) (leaf y) x≡y = cong₂ {!!} x≡y {!!}
+  decode (leaf x) (branch T T₁) (lift ())
+  decode (branch _ _) (leaf x) (lift ())
+  decode (branch S T) (branch U V) (cST , cUV) = cong₂ branch (decode S U {!!}) {!!}
+
+  decodeRefl : ∀ T → decode T T (reflCode T) ≡ refl
+  decodeRefl = {!!}
+
+  decodeEncode : ∀ S T →  (p : S ≡ T) → decode S T (encode S T p) ≡ p
+  decodeEncode S T = J (λ T p → decode S T (encode S T p) ≡ p) (cong (decode S S) (encodeRefl S) ∙ decodeRefl S)
+
+  isOfHLevelCover : (n : HLevel) (p : isOfHLevel (suc (suc n)) A)(S T : BinTree A) → isOfHLevel (suc n) (Cover S T)
+  isOfHLevelCover = {!!}
 
 --
 
 isOfHLevelBinTree : (n : HLevel) → isOfHLevel (suc (suc n)) A → isOfHLevel (suc (suc n)) (BinTree A)
 isOfHLevelBinTree n ofLevel S T =
-  {!isOfHLevelRetract (suc n) ?!}
+  isOfHLevelRetract (suc n)
+    (BinTreePath.encode S T)
+    (BinTreePath.decode S T)
+    (BinTreePath.decodeEncode S T)
+    (BinTreePath.isOfHLevelCover n ofLevel S T)
 
 
+binTreeSet : isSet A → isSet (BinTree A)
+binTreeSet setA = isOfHLevelBinTree 0 setA
 
--- NOTE:
--- should i developed this in a further module which takes isSet A as a parameter?
--- would this make using the equality (eventually to be) obtained from transport easier?
 
-module _ (setA : isSet A) where
-  binTreeSet : isSet (BinTree A)
-  binTreeSet = isOfHLevelBinTree 0 setA
+-- BinTree A and FreeMagma A are equal when BinTree A is a set
+-- NOTE: maybe  better to use isSet (BinTree A) rather that isSet A?
+module _ (setBinTreeA : isSet (BinTree A)) where
 
   BinTree→FreeMagma : BinTree A → FreeMagma A
   BinTree→FreeMagma (leaf x) = η x
@@ -65,7 +78,7 @@ module _ (setA : isSet A) where
   FreeMagma→BinTree : FreeMagma A → BinTree A
   FreeMagma→BinTree (η x) = leaf x
   FreeMagma→BinTree (M · N) = branch (FreeMagma→BinTree M) (FreeMagma→BinTree N)
-  FreeMagma→BinTree (trunc M N p q i j) = isSet→SquareP (λ i j → binTreeSet)
+  FreeMagma→BinTree (trunc M N p q i j) = isSet→SquareP (λ i j → setBinTreeA)
                                                         (λ j → FreeMagma→BinTree (p j))
                                                         (λ j → FreeMagma→BinTree (q j))
                                                         refl refl i j
