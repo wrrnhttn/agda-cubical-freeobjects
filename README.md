@@ -11,3 +11,5 @@ TODO
   * Depend on cubical lib properly
   
   * misc. other library maintenance
+  
+  * Define universal properties
