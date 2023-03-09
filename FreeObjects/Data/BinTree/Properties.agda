@@ -44,7 +44,7 @@ module BinTreePath {ℓ} {A : Type ℓ} where
 
   decodeRefl : ∀ T → decode T T (reflCode T) ≡ refl
   decodeRefl (leaf x) = refl
-  decodeRefl (branch S T) = {!!} --not sure what to do here
+  decodeRefl (branch S T) = {!!}
 
   decodeEncode : ∀ S T →  (p : S ≡ T) → decode S T (encode S T p) ≡ p
   decodeEncode S T = J (λ T p → decode S T (encode S T p) ≡ p) (cong (decode S S) (encodeRefl S) ∙ decodeRefl S)
@@ -73,8 +73,16 @@ binTreeSet setA = isOfHLevelBinTree 0 setA
 
 -- BinTree A and FreeMagma A are equal when BinTree A is a set
 -- NOTE: maybe  better to use isSet (BinTree A) rather that isSet A?
-module _ (setBinTreeA : isSet (BinTree A)) where
+-- TODO: (9 march 2023) no, we should use isSet A, and show that BinTree A
+--         is a set (as well as FreeMagma A, elsewhere).
+--module _ (setBinTreeA : isSet (BinTree A)) where
+module _ (setA : isSet A) where
 
+  
+
+  setBinTreeA : isSet (BinTree A)
+  setBinTreeA = binTreeSet setA
+  
   BinTree→FreeMagma : BinTree A → FreeMagma A
   BinTree→FreeMagma (leaf x) = η x
   BinTree→FreeMagma (branch S T) = (BinTree→FreeMagma S) · BinTree→FreeMagma T
@@ -88,8 +96,11 @@ module _ (setBinTreeA : isSet (BinTree A)) where
                                                         (λ j → FreeMagma→BinTree (q j))
                                                         refl refl i j
 
--- FreeMagma→BinTree : FreeMagma A → ∥ BinTree A ∥₂
--- FreeMagma→BinTree (η x) = ∣ (leaf x) ∣₂
--- --FreeMagma→BinTree (M · N) = ∣ branch (elim (λ x → {!!}) (λ x → x) (FreeMagma→BinTree M)) {!!} ∣₂
--- FreeMagma→BinTree (M · N) = ∣ branch {!!} {!!} ∣₂
--- FreeMagma→BinTree (trunc M N x y i i₁) = {!!}
+  BinTree→FreeMagma→BinTree : ∀ (T : BinTree A) → FreeMagma→BinTree (BinTree→FreeMagma T) ≡ T
+  BinTree→FreeMagma→BinTree (leaf x) = refl
+  BinTree→FreeMagma→BinTree (branch S T) = cong₂ (λ x y → branch x y) (BinTree→FreeMagma→BinTree S) (BinTree→FreeMagma→BinTree T)
+
+  FreeMagma→BinTree→FreeMagma : ∀ (M : FreeMagma A) → BinTree→FreeMagma (FreeMagma→BinTree M) ≡ M
+  FreeMagma→BinTree→FreeMagma (η x) = refl
+  FreeMagma→BinTree→FreeMagma (M · N) = cong₂ (λ x y → x · y) (FreeMagma→BinTree→FreeMagma M) (FreeMagma→BinTree→FreeMagma N)
+  FreeMagma→BinTree→FreeMagma (trunc M N x y i j) = cong {!!} {!!}

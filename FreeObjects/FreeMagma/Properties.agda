@@ -15,6 +15,8 @@ private
     ℓ : Level
     A : Type ℓ
 
+-- TODO: rewrite this taking parameter `isSet A` and look into whether we get the same results
+
 freeMagmaIsSet : isSet (FreeMagma A)
 freeMagmaIsSet = trunc
 
